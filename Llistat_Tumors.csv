@@ -1,0 +1,85 @@
+ICDO;CAT
+1;Llavi
+2;Llengua
+3;Cavitat oral
+4;Glàndules salivals
+5;Amígdala
+6;Altres orofaringe
+7;Orofaringe
+8;Nasofaringe
+9;Hipofaringe
+10;Faringe i boca no especificat
+11;Faringe
+11,5;Cavitat oral i faringe
+12;Llavi, cav. oral i faringe
+13;Esòfag
+14;Estómac
+15;Budell prim
+16;Còlon
+17;Recte
+18;Anus
+19;Recte i anus
+20;Còlon, recte i anus
+21;Fetge
+22;Bufeta biliar i vies
+23;Pàncrees
+26;Cavitats nasals i sinus
+27;Laringe
+28;Pulmó
+29;Altres òrgans toràcics
+32;Os i cartilags
+36;Pleura
+37;Mesotelioma
+38;Sarcoma de Kaposi
+39;Teixits tous
+41;Melanoma de pell
+43;Pell no melanoma
+44;Pell
+45;Mama
+46;Vulva
+47;Vagina
+48;Coll uterí
+49;Cos uterí
+50;Úter SAI
+51;Ovari
+52;Altres òrgans genitals femenins
+53;Vulva, vagina i altres
+54;Placenta
+56;Penis
+57;Próstata
+58;Testicle
+59;Altres òrgans genitals masculins
+62;Ronyó
+63;Pelvis renal
+64;Urèter
+65;Bufeta urinària
+66;Altres òrgans urinaris
+69;Ull
+70;Encèfal
+71;Encèfal i SNC
+72;Tiroides
+73;Glàndula adrenal
+74;Altres glàndules endocrines
+75;Altres glàndules endocrines (total)
+77;Limfoma hodgkinià
+78;Limfoma no hodgkinià
+80;Malalties immunoproliferatives
+81;Mieloma múltiple
+83;Leucèmia limfoide
+84;Leucèmia mieloide
+86;Leucèmia no especificada
+87;Leucèmia limfoide aguda
+88;Leucèmia limfoide crònica
+89;Leucèmia mieloide aguda
+90;Leucèmia mieloide crònica
+91;Leucèmia
+92;Sd. Mieloproliferatives cròniques
+93;Sd. Mielodisplàstiques
+94;T. hematopoètic i limfoide
+98;No especificat (total)
+99;Totes
+100;Totes (exc. pell no mel)
+101;Mama in situ
+102;Coll uterí, in situ
+110;Altres
+111;Altres

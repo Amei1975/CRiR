@@ -1,24 +1,31 @@
 library(shiny)
 
-setwd("C:/Users/LENOVO/Desktop/Curso/CRiR/CRiR")
+setwd("C:/R/CRiR")
 incidencia <- read.csv2("incidencia.csv")
 mortalitat <- read.csv2("mortalitat.csv")
 poblacio <- read.csv2("poblacio.csv")
+ltumors <- read.csv2("Llistat_Tumors.csv")
+ltumors.list <- as.list(ltumors$ICDO)
+names(ltumors.list) <- ltumors$CAT
 
-# Define UI for application that draws a histogram
+# Definicion UI
 ui <- fluidPage(
    
-   # Application title
+   # Titulo aplicacion
    titlePanel("RCT - Calculo de Tasas"),
    
-   # Sidebar with a slider input for number of bins 
+   # Sidebar 
    sidebarLayout(
       sidebarPanel(
-         numericInput("icdo", "Tipo Tumoral", 100),
-         numericInput("sexe", "Sexe", 1),
-         numericInput("anyi", "Any Inici",2003),
-         numericInput("anyf", "Any Final",2007),
-         actionButton("calcula","Calcula")
+         selectInput("zona", "Àrea", c("Tarragona"="P4300","RS Camp de Tarragona"="R0002","RS Terres del Ebre"="R0003")),
+         selectInput("icdo", "Tipus Tumoral",choices=ltumors.list, 100),
+         radioButtons("sexe", "Sexe", c("Home"=1,"Dona"=2,"Ambdos sexes"=0),1,inline=TRUE),
+         numericInput("anyi", "Any Inici",2008),
+         numericInput("anyf", "Any Final",2011),
+         radioButtons("tipus", "Incidencia/Mortalitat", c("Incidencia"="I","Mortalidad"="M"),"I",inline=TRUE),
+         radioButtons("estandard", "Ajustament", c("Mundial"=1,"Europeu"=2),1,inline=TRUE),
+         radioButtons("tcalcul", "Tipus de càlcul", c("Global"=1,"Any a any"=2),1,inline=TRUE),
+         actionButton("calcul","Calcul")
          ),
         # Show a plot of the generated distribution
       mainPanel(
@@ -30,12 +37,100 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   output$result <- renderPrint({
-    if (input$calcula==0) return(invisible(NULL))
+    if (input$calcul==0) return(invisible(NULL))
     isolate({
-      ta("P4300", input$icdo, input$sexe, input$anyi, input$anyf, "I", 1, 18, 1)
+      if (input$tcalcul==1) indicadors(input$zona, input$icdo, input$sexe, input$anyi, input$anyf, input$tipus, 1, 18, input$estandard,"CAT")
+      if (input$tcalcul==2) indicadors.any(input$zona, input$icdo, input$sexe, input$anyi, input$anyf, input$tipus, 1, 18, input$estandard,"CAT")
       })
     })
-  
+}
+
+# Funciones utilizadas
+
+indicadors <- function(zona="P4300", icdo, sexe, anyi=2008, anyf=2011, tipus="I", edin=1, edfn=18, estandard=1, idioma="CAT")
+{
+  if (idioma=="CAT")
+  {
+    valoricdo <- ltumors[ltumors$ICDO==icdo, "CAT"]
+  }
+  if (idioma=="ESP")
+  {
+    valoricdo <- ltumors[ltumors$ICDO==icdo, "ESP"]
+  }
+  if (idioma=="ENG")
+  {
+    valoricdo <- ltumors[ltumors$ICDO==icdo, "ENG"]
+  }
+  valorn <- nany(zona, icdo, sexe, anyi, anyf, tipus, edin, edfn)	
+  valortb <- tb(zona, icdo, sexe, anyi, anyf, tipus, edin, edfn)
+  valorta <- ta(zona, icdo, sexe, anyi, anyf, tipus, edin, edfn,estandard)
+  cat("-------------------------------------------------- -------- -------- --------\n")
+  cat("TIPUS TUMORAL:                                        N/ANY       TB       TA\n")
+  cat("-------------------------------------------------- -------- -------- --------\n")
+  cat(format(as.character(valoricdo), width=50),format(round(valorn,1),width=8),format(round(valortb,1),width=8),format(round(valorta,1),width=8))
+  }
+
+indicadors.any <- function(zona="P4300", icdo, sexe, anyi=2008, anyf=2011, tipus="I", edin=1, edfn=18, estandard=1, idioma="CAT")
+{
+  if (idioma=="CAT")
+  {
+    valoricdo <- ltumors[ltumors$ICDO==icdo, "CAT"]
+  }
+  if (idioma=="ESP")
+  {
+    valoricdo <- ltumors[ltumors$ICDO==icdo, "ESP"]
+  }
+  if (idioma=="ENG")
+  {
+    valoricdo <- ltumors[ltumors$ICDO==icdo, "ENG"]
+  }
+  cat("----- -------- -------- --------\n")
+  cat(" ANY:        N       TB       TA\n")
+  cat("----- -------- -------- --------\n")
+  for(i in anyi:anyf) {
+    valorn <- nany(zona, icdo, sexe, i, i, tipus, edin, edfn)	
+    valortb <- tb(zona, icdo, sexe, i, i, tipus, edin, edfn)
+    valorta <- ta(zona, icdo, sexe, i, i, tipus, edin, edfn,estandard)   
+    cat(format(i, width=5),format(round(valorn,1),width=8),format(round(valortb,1),width=8),format(round(valorta,1),width=8),"\n")
+  }
+}
+
+ntotal <- function(zona="P4300", icdo, sexe, anyi, anyf, tipus="I", edin=1, edfn=18)
+{
+  a<-4+edin
+  b<-4+edfn	
+  if(tipus=="I")
+  {
+    if (edin == 1 & edfn == 18) 
+    {
+      b <-23
+    }
+    n <- nrow(as.matrix(incidencia[incidencia$ZONA==zona & incidencia$ICDO==icdo & incidencia$SEXE==sexe & incidencia$ANY>=anyi & incidencia$ANY<=anyf,a:b]))
+    if (n > 0) {casos <- incidencia[incidencia$ZONA==zona & incidencia$ICDO==icdo & incidencia$SEXE==sexe & incidencia$ANY>=anyi & incidencia$ANY<=anyf,a:b]}
+    if (n == 0) { casos <- 0 }
+  }
+  if(tipus=="M")
+  {
+    n <- nrow(as.matrix(mortalitat[mortalitat$ZONA==zona & mortalitat$ICDO==icdo & mortalitat$SEXE==sexe & mortalitat$ANY>=anyi & mortalitat$ANY<=anyf,a:b]))
+    if (n > 0) {casos <- mortalitat[mortalitat$ZONA==zona & mortalitat$ICDO==icdo & mortalitat$SEXE==sexe & mortalitat$ANY>=anyi & mortalitat$ANY<=anyf,a:b]}
+    if (n == 0) { casos <- 0 }
+  }
+  sum(casos)
+}
+
+nany <- function(zona="P4300", icdo, sexe, anyi, anyf, tipus="I", edin=1, edfn=18)
+{
+  anys <- (anyf-anyi)+1
+  ntotal(zona, icdo, sexe, anyi, anyf, tipus, edin, edfn)/anys
+}
+
+tb <- function(zona="P4300", icdo, sexe, anyi, anyf, tipus="I", edin=1, edfn=18)
+{
+  a<-4+edin
+  b<-4+edfn
+  casos <- ntotal(zona, icdo, sexe, anyi, anyf, tipus, edin, edfn)
+  pob <- poblacio[poblacio$ZONA==zona & poblacio$SEXE==sexe & poblacio$ANY>=anyi & poblacio$ANY<=anyf & poblacio$MES=="J",a:b]
+  casos/sum(pob)*100000
 }
 
    ta <- function(zona="P4300", icdo, sexe, anyi, anyf, tipus="I", edin=1, edfn=18, estandard=1)
@@ -132,29 +227,9 @@ server <- function(input, output) {
      tasa 
    }
    
-   ntotal <- function(zona="P4300", icdo, sexe, anyi, anyf, tipus="I", edin=1, edfn=18)
-   {
-     a<-4+edin
-     b<-4+edfn	
-     if(tipus=="I")
-     {
-       if (edin == 1 & edfn == 18) 
-       {
-         b <-23
-       }
-       n <- nrow(as.matrix(incidencia[incidencia$ZONA==zona & incidencia$ICDO==icdo & incidencia$SEXE==sexe & incidencia$ANY>=anyi & incidencia$ANY<=anyf,a:b]))
-       if (n > 0) {casos <- incidencia[incidencia$ZONA==zona & incidencia$ICDO==icdo & incidencia$SEXE==sexe & incidencia$ANY>=anyi & incidencia$ANY<=anyf,a:b]}
-       if (n == 0) { casos <- 0 }
-     }
-     if(tipus=="M")
-     {
-       n <- nrow(as.matrix(mortalitat[mortalitat$ZONA==zona & mortalitat$ICDO==icdo & mortalitat$SEXE==sexe & mortalitat$ANY>=anyi & mortalitat$ANY<=anyf,a:b]))
-       if (n > 0) {casos <- mortalitat[mortalitat$ZONA==zona & mortalitat$ICDO==icdo & mortalitat$SEXE==sexe & mortalitat$ANY>=anyi & mortalitat$ANY<=anyf,a:b]}
-       if (n == 0) { casos <- 0 }
-     }
-     sum(casos)
-   }
 
-# Run the application 
+
+# Ejecucion de la aplicacion 
+   
 shinyApp(ui = ui, server = server)
 
